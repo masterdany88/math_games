@@ -1,554 +1,297 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alphabet Lore Math - Pro Edition</title>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-<link href="https://fonts.cdnfonts.com/css/alphabet-lore-font" rel="stylesheet">
-<style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabet Lore Math - Pro Edition</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.cdnfonts.com/css/alphabet-lore-font" rel="stylesheet">
+    <style>
         body { font-family: 'Alphabet Lore', sans-serif; background: #0b0e14; color: white; margin: 0; overflow-x: hidden; }
-
-        .gallery-card { background: rgba(30, 41, 59, 0.3); border: 2px solid #1e293b; transition: all 0.3s ease; }
-
+        .gallery-card { background: rgba(30, 41, 59, 0.3); border: 2px solid #1e293b; transition: all 0.3s ease; min-height: 80px; }
         .unlocked-card { border: 2px solid #fbbf24; background: #1e293b; box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
-
-        .flying-container { position: fixed; z-index: 1000; pointer-events: none; display: flex; align-items: center; justify-content: center; transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1); width: 300px; height: 300px; }
-
-        .flying-bg-effect { position: absolute; width: 300%; height: 300%; background: radial-gradient(circle, rgba(30, 41, 59, 0.95) 20%, rgba(15, 23, 42, 0.4) 60%, rgba(15, 23, 42, 0) 80%); border-radius: 50%; z-index: 1; transition: opacity 0.6s ease; }
-
-        .flying-img { position: relative; z-index: 2; width: 100px; height: 100px; object-fit: contain; transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1); }
-
+        .flying-container { position: fixed; z-index: 1000; pointer-events: none; display: flex; align-items: center; justify-content: center; transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1); width: 100px; height: 100px; }
+        .flying-bg-effect { position: absolute; width: 300%; height: 300%; background: radial-gradient(circle, rgba(251, 191, 36, 0.4) 20%, rgba(15, 23, 42, 0) 70%); border-radius: 50%; z-index: 1; }
+        .flying-img { position: relative; z-index: 2; width: 100%; height: 100%; object-fit: contain; }
         .modal-overlay { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); }
-
-        input { font-family: 'Alphabet Lore', sans-serif; }
-
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-</style>
+    </style>
 </head>
 <body>
-<div id="root"></div>
+    <div id="root"></div>
 
     <script type="text/babel">
-
         const { useState, useEffect, useRef } = React;
 
         const SETS = {
-
             alphabet: {
-
                 name: "Alphabet Lore",
-
                 items: {
-
-                    "0": 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/7/7d/0_stabilized.png/revision/latest?cb=20250409165455%27,
-
-                    "1": 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/5/54/1_Official.png/revision/latest?cb=20250209101757%27,
-
-                    "2": 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/6/6e/Two-sum.png/revision/latest?cb=20250209101954%27,
-
-                    "3": 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/3/31/NumberLoreOfficial3.png/revision/latest?cb=20250209102122%27,
-
-                    "4": 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/1/1d/Official4.png/revision/latest?cb=20250209102227%27,
-
-                    "5": 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/5/53/Fivuh.png/revision/latest?cb=20250613123726%27,
-
-                    A: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/4/4c/AL-A.png/revision/latest?cb=20250715230429%27,
-
-                    B: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/5/50/AL-B.png/revision/latest?cb=20250715230410%27,
-
-                    C: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/1/1a/AL-C.png/revision/latest?cb=20250315154441%27,
-
-                    D: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/d/d1/AL-D.png/revision/latest?cb=20250315161938%27,
-
-                    E: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/a/a1/AL-E.png/revision/latest?cb=20250320095034%27,
-
-                    F: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/b/bb/FMerch.png/revision/latest?cb=20250320095049%27,
-
-                    G: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/f/f7/G.png/revision/latest?cb=20250320095110%27,
-
-                    H: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/c/cf/Hrealistic.png/revision/latest?cb=20250320095116%27,
-
-                    I: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/5/51/INew.png/revision/latest?cb=20250715230618%27,
-
-                    J: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/3/31/JNew.png/revision/latest?cb=20250320095224%27,
-
-                    K: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/d/df/KNew.png/revision/latest?cb=20250320095406%27,
-
-                    L: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/a/ab/LinMerch.png/revision/latest?cb=20250320095412%27,
-
-                    M: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/a/a3/M.png/revision/latest?cb=20221028193734%27,
-
-                    N: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/2/26/NNew.png/revision/latest?cb=20250320095538%27,
-
-                    O: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/c/c7/ONew.png/revision/latest?cb=20250320095545%27,
-
-                    P: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/3/3e/PNew.png/revision/latest?cb=20250320095725%27,
-
-                    Q: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/0/0d/QNew.png/revision/latest?cb=20250320095736%27,
-
-                    R: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/f/f7/R.png/revision/latest?cb=20221119151434%27,
-
-                    S: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/7/77/SNew.png/revision/latest?cb=20250320095923%27,
-
-                    T: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/0/02/T.png/revision/latest?cb=20221204174806%27,
-
-                    U: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/8/8f/USmile.png/revision/latest?cb=20250320095943%27,
-
-                    V: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/1/1f/VNew.png/revision/latest?cb=20250320095954%27,
-
-                    W: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/9/99/WNew.png/revision/latest?cb=20250320100001%27,
-
-                    X: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/a/a5/X.png/revision/latest?cb=20220916192602%27,
-
-                    Y: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/8/8a/Y.png/revision/latest?cb=20250320100055%27,
-
-                    Z: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/5/54/ZNew.png/revision/latest?cb=20250320100105%27,
-
+                    "0": 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/7/7d/0_stabilized.png',
+                    "1": 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/5/54/1_Official.png',
+                    "2": 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/6/6e/Two-sum.png',
+                    "3": 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/3/31/NumberLoreOfficial3.png',
+                    "4": 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/1/1d/Official4.png',
+                    "5": 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/5/53/Fivuh.png',
+                    A: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/4/4c/AL-A.png',
+                    B: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/5/50/AL-B.png',
+                    C: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/1/1a/AL-C.png',
+                    D: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/d/d1/AL-D.png',
+                    E: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/a/a1/AL-E.png',
+                    F: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/b/bb/FMerch.png',
+                    G: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/f/f7/G.png',
+                    H: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/c/cf/Hrealistic.png',
+                    I: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/5/51/INew.png',
+                    J: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/3/31/JNew.png',
+                    K: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/d/df/KNew.png',
+                    L: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/a/ab/LinMerch.png',
+                    M: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/a/a3/M.png',
+                    N: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/2/26/NNew.png',
+                    O: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/c/c7/ONew.png',
+                    P: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/3/3e/PNew.png',
+                    Q: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/0/0d/QNew.png',
+                    R: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/f/f7/R.png',
+                    S: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/7/77/SNew.png',
+                    T: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/0/02/T.png',
+                    U: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/8/8f/USmile.png',
+                    V: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/1/1f/VNew.png',
+                    W: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/9/99/WNew.png',
+                    X: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/a/a5/X.png',
+                    Y: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/8/8a/Y.png',
+                    Z: 'https://static.wikia.nocookie.net/unofficial-alphabet-lore/images/5/54/ZNew.png',
                 }
-
             },
-
             animals: {
-
                 name: "Animated Animals",
-
                 items: {
-
                     "A1": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f981/512.gif",
-
                     "A3": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f438/512.gif",
-
                     "A4": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f412/512.gif",
-
                     "A6": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f431/512.gif",
-
                     "A7": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f98a/512.gif",
-
                     "A9": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f43c/512.gif",
-
                     "A10": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f9a5/512.gif",
-
                     "A11": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f9a6/512.gif",
-
                     "A13": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f998/512.gif",
-
                     "A15": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f422/512.gif",
-
                     "A16": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f40d/512.gif",
-
                     "A17": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f98e/512.gif",
-
                     "A18": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f419/512.gif",
-
                     "A19": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f42c/512.gif",
-
                     "A20": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f988/512.gif",
-
                     "A21": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f41d/512.gif",
-
                     "A22": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f41e/512.gif",
-
                     "A23": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f98b/512.gif",
-
                     "A24": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f41c/512.gif",
-
                     "A25": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f423/512.gif",
-
                     "A28": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f989/512.gif",
-
                     "A29": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f987/512.gif",
-
                     "A30": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f427/512.gif",
-
                 }
-
-            },
-
-            sport: {
-
-                name: "Sport & Fun",
-
-                items: {
-
-                    "S1": "https://fonts.gstatic.com/s/e/notoemoji/latest/26bd/512.gif",
-
-                    "S2": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3c0/512.gif",
-
-                    "S5": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3be/512.gif",
-
-                    "S6": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3d3/512.gif",
-
-                    "S7": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3cf/512.gif",
-
-                    "S8": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3af/512.gif",
-
-                    "S9": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3b3/512.gif",
-
-                    "S10": "https://fonts.gstatic.com/s/e/notoemoji/latest/26f3/512.gif",
-
-                    "S13": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f94b/512.gif",
-
-                    "S15": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f6f9/512.gif",
-
-                    "S19": "https://fonts.gstatic.com/s/e/notoemoji/latest/26f8_fe0f/512.gif",
-
-                    "S20": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3bf/512.gif",
-
-                    "S22": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3b2/512.gif",
-
-                    "S23": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3b1/512.gif",
-
-                    "S24": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3a1/512.gif",
-
-                    "S25": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3a2/512.gif",
-
-                    "S27": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3ad/512.gif",
-
-                    "S29": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3b8/512.gif",
-
-                    "S30": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3ba/512.gif",
-
-                }
-
-            },
-
-            food: {
-
-                name: "Yummy Food",
-
-                items: {
-
-                    "F1": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f355/512.gif",
-
-                    "F2": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f354/512.gif",
-
-                    "F3": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f32d/512.gif",
-
-                    "F5": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f32e/512.gif",
-
-                    "F6": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f373/512.gif",
-
-                    "F7": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f35d/512.gif",
-
-                    "F9": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f35e/512.gif",
-
-                    "F11": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f9c0/512.gif",
-
-                    "F12": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f34e/512.gif",
-
-                    "F14": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f349/512.gif",
-
-                    "F15": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f353/512.gif",
-
-                    "F16": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f95d/512.gif",
-
-                    "F17": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f347/512.gif",
-
-                    "F18": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f344/512.gif",
-
-                    "F19": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f33d/512.gif",
-
-                    "F20": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f366/512.gif",
-
-                    "F21": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f369/512.gif",
-
-                    "F23": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f36a/512.gif",
-
-                    "F26": "https://fonts.gstatic.com/s/e/notoemoji/latest/2615/512.gif",
-
-                    "F27": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f9cb/512.gif",
-
-                    "F28": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f377/512.gif",
-
-                }
-
-            },
-
+            }
         };
 
         function App() {
-
             const [currentSetKey, setCurrentSetKey] = useState("alphabet");
-
             const [score, setScore] = useState(0);
-
-            const currentImages = SETS[currentSetKey].items;
-
-            const allKeys = Object.keys(currentImages);
-
             const [unlocked, setUnlocked] = useState([]);
-
             const [problem, setProblem] = useState({ q: "", a: 0 });
-
             const [input, setInput] = useState("");
-
             const [isWrong, setIsWrong] = useState(false);
-
             const [flyingInfo, setFlyingInfo] = useState(null);
-
             const [showWinModal, setShowWinModal] = useState(false);
 
             const cardRefs = useRef({});
+            const currentImages = SETS[currentSetKey].items;
+            const allKeys = Object.keys(currentImages);
 
             useEffect(() => {
-
                 generateProblem();
-
             }, [currentSetKey]);
 
-            // Automatyczny submit po wprowadzeniu poprawnej odpowiedzi
-
             useEffect(() => {
-
-                if (parseInt(input) === problem.a) {
-
-                    handleSubmit();
-
+                if (input !== "" && parseInt(input) === problem.a) {
+                    const timer = setTimeout(() => handleSubmit(), 200);
+                    return () => clearTimeout(timer);
                 }
-
             }, [input]);
 
-const generateProblem = () => {
-
+            const generateProblem = () => {
                 const types = ['mul', 'div'];
-
                 const type = types[Math.floor(Math.random() * types.length)];
-
                 if (type === 'mul') {
-
                     const a = Math.floor(Math.random() * 9) + 2;
-
                     const b = Math.floor(Math.random() * 10) + 1;
-
-                    setProblem({ q: `${a} x ${b}`, a: a * b });
-
+                    setProblem({ q: `${a} × ${b}`, a: a * b });
                 } else {
-
-                    // Dzielenie: (a * b) / a = b
-
-                    const b = Math.floor(Math.random() * 9) + 2; // wynik
-
-                    const a = Math.floor(Math.random() * 10) + 1; // dzielnik
-
-                    const total = a * b; // dzielna
-
-                    setProblem({ q: `${total} : ${a}`, a: b });
-
+                    const b = Math.floor(Math.random() * 9) + 2;
+                    const a = Math.floor(Math.random() * 10) + 1;
+                    const total = a * b;
+                    setProblem({ q: `${total} ÷ ${a}`, a: b });
                 }
-
             };
 
             const resetGame = (setKey = currentSetKey) => {
-
                 setCurrentSetKey(setKey);
-
                 setUnlocked([]);
-
                 setScore(0);
-
                 setInput("");
-
                 setShowWinModal(false);
-
                 generateProblem();
-
             };
 
-
-const handleSubmit = (e) => {
-
+            const handleSubmit = (e) => {
                 if (e) e.preventDefault();
-
-                // Konwersja na liczbę, by uniknąć problemów z porównywaniem stringów
-
                 const userAns = parseInt(input);
 
-                const isCorrect = userAns === problem.a;
-
-                if(isCorrect) {
-
-                    confetti({ particleCount: 30, spread: 40, origin: { x: 0.2, y: 0.2 } });
+                if (userAns === problem.a) {
+                    confetti({ particleCount: 40, spread: 60, origin: { y: 0.3 } });
 
                     const available = allKeys.filter(k => !unlocked.includes(k));
-
-                    if(available.length > 0) {
-
+                    if (available.length > 0) {
                         const picked = available[Math.floor(Math.random() * available.length)];
 
                         setFlyingInfo({ char: picked, stage: 'start' });
 
                         setTimeout(() => {
-
                             const target = cardRefs.current[picked];
-
                             if (target) {
-
                                 const rect = target.getBoundingClientRect();
-
-                                setFlyingInfo({
-
-                                    char: picked, stage: 'flying',
-
+                                setFlyingInfo(prev => ({
+                                    ...prev,
+                                    stage: 'flying',
                                     targetX: rect.left + rect.width / 2,
-
                                     targetY: rect.top + rect.height / 2
-
-                                });
-
+                                }));
                             }
-
-                        }, 800);
+                        }, 600);
 
                         setTimeout(() => {
-
                             setUnlocked(prev => {
-
-                                const newUnlocked = [...prev, picked];
-
-                                if (newUnlocked.length === allKeys.length) {
-
-                                    setTimeout(() => setShowWinModal(true), 800);
-
+                                const next = [...prev, picked];
+                                if (next.length === allKeys.length) {
+                                    setTimeout(() => setShowWinModal(true), 500);
                                 }
-
-                                return newUnlocked;
-
+                                return next;
                             });
-
                             setFlyingInfo(null);
-
-                        }, 2000);
-
+                        }, 1800);
                     }
 
                     setScore(s => s + 10);
-
                     setInput("");
-
                     generateProblem();
-
-                } else {
-
-                    // Jeśli input nie jest pusty i jest błędny (zapobiega czyszczeniu przy pustym submice)
-
-                    if (input !== "") {
-
-                        setIsWrong(true);
-
+                } else if (input !== "") {
+                    setIsWrong(true);
+                    setTimeout(() => {
+                        setIsWrong(false);
                         setInput("");
-
-                        setTimeout(() => setIsWrong(false), 500);
-
-                    }
-
+                    }, 500);
                 }
-
             };
 
             return (
-<div className="p-4 min-h-screen">
-<div className="fixed top-4 left-4 z-40 w-48 sm:w-64">
-<div className={`p-4 rounded-2xl bg-slate-900 border-b-4 border-blue-600 shadow-2xl ${isWrong ? 'animate__animated animate__shakeX border-red-500' : ''}`}>
-<div className="text-center text-3xl mb-3 font-bold text-yellow-400">{problem.q}</div>
-<form onSubmit={handleSubmit}>
-<input type="number" value={input} onChange={e => setInput(e.target.value)}
-
+                <div className="p-4 min-h-screen">
+                    {/* Fixed UI Header */}
+                    <div className="fixed top-4 left-1/2 -translate-x-1/2 sm:left-4 sm:translate-x-0 z-40 w-64">
+                        <div className={`p-4 rounded-2xl bg-slate-900 border-b-4 border-blue-600 shadow-2xl transition-all ${isWrong ? 'animate__animated animate__shakeX border-red-500' : ''}`}>
+                            <div className="text-center text-3xl mb-3 font-bold text-yellow-400">{problem.q}</div>
+                            <form onSubmit={handleSubmit}>
+                                <input
+                                    type="number"
+                                    value={input}
+                                    onChange={e => setInput(e.target.value)}
                                     className="w-full bg-slate-800 text-2xl text-center p-2 rounded-xl mb-2 outline-none text-white border-2 border-transparent focus:border-yellow-400"
+                                    placeholder="?"
+                                    autoFocus
+                                />
+                                <button className="w-full bg-yellow-500 hover:bg-yellow-400 text-black text-xl py-2 rounded-xl font-black transition-all">OK!</button>
+                            </form>
+                            <div className="mt-2 text-center text-blue-400 text-sm font-bold tracking-widest uppercase">Wynik: {score}</div>
+                        </div>
+                    </div>
 
-                                    placeholder="?" autoFocus />
-<button className="w-full bg-yellow-500 hover:bg-yellow-400 text-black text-xl py-2 rounded-xl font-black transition-all">OK!</button>
-</form>
-<div className="mt-2 text-center text-blue-400 text-sm font-bold tracking-widest">WYNIK: {score}</div>
-</div>
-</div>
-
+                    {/* Flying Animation */}
                     {flyingInfo && (
-<div className="flying-container" style={{
-
+                        <div className="flying-container" style={{
                             top: flyingInfo.stage === 'start' ? '50%' : `${flyingInfo.targetY}px`,
-
                             left: flyingInfo.stage === 'start' ? '50%' : `${flyingInfo.targetX}px`,
-
                             transform: 'translate(-50%, -50%)'
-
                         }}>
-<div className="flying-bg-effect" style={{
-
+                            <div className="flying-bg-effect" style={{
                                 opacity: flyingInfo.stage === 'start' ? 1 : 0,
-
-                                transform: `scale(${flyingInfo.stage === 'start' ? 1.2 : 0.2})`
-
+                                transition: 'opacity 0.5s'
                             }}></div>
-<img src={currentImages[flyingInfo.char]} className="flying-img" style={{
-
-                                transform: flyingInfo.stage === 'start' ? 'scale(5) rotate(0deg)' : 'scale(0.7) rotate(720deg)'
-
-                            }} />
-</div>
-
+                            <img
+                                src={currentImages[flyingInfo.char]}
+                                className="flying-img"
+                                style={{
+                                    transform: flyingInfo.stage === 'start' ? 'scale(4)' : 'scale(0.5) rotate(720deg)',
+                                    transition: 'all 1.2s cubic-bezier(0.19, 1, 0.22, 1)'
+                                }}
+                            />
+                        </div>
                     )}
 
-                    <div className="sm:ml-72 mt-24 sm:mt-0">
-<h2 className="text-xl mb-4 text-slate-500">Zestaw: {SETS[currentSetKey].name}</h2>
-<div className="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-8 gap-3">
-
+                    {/* Gallery Grid */}
+                    <div className="mt-48 sm:mt-0 sm:ml-72">
+                        <h2 className="text-xl mb-6 text-slate-500 font-bold uppercase tracking-widest">
+                            Zestaw: <span className="text-white">{SETS[currentSetKey].name}</span>
+                        </h2>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
                             {allKeys.map((id) => (
-<div key={id} ref={el => cardRefs.current[id] = el}
-
-                                    className={`gallery-card aspect-square rounded-lg flex items-center justify-center ${unlocked.includes(id) ? 'unlocked-card animate__animated animate__bounceIn' : 'opacity-10'}`}>
-
-                                    {unlocked.includes(id) ? <img src={currentImages[id]} className="w-4/5 h-4/5 object-contain" /> : <span className="text-lg font-bold">{id}</span>}
-</div>
-
+                                <div
+                                    key={id}
+                                    ref={el => cardRefs.current[id] = el}
+                                    className={`gallery-card aspect-square rounded-xl flex items-center justify-center relative overflow-hidden ${unlocked.includes(id) ? 'unlocked-card animate__animated animate__bounceIn' : 'opacity-20'}`}
+                                >
+                                    {unlocked.includes(id) ? (
+                                        <img src={currentImages[id]} className="w-4/5 h-4/5 object-contain" alt={id} />
+                                    ) : (
+                                        <span className="text-xl font-bold text-slate-600">{id}</span>
+                                    )}
+                                </div>
                             ))}
-</div>
-</div>
+                        </div>
+                    </div>
 
+                    {/* Win Modal */}
                     {showWinModal && (
-<div className="fixed inset-0 z-[100] modal-overlay flex items-center justify-center p-4">
-<div className="bg-slate-900 border-4 border-yellow-400 rounded-3xl p-8 max-w-lg w-full text-center relative animate__animated animate__zoomIn shadow-2xl">
-<button onClick={() => setShowWinModal(false)} className="absolute top-4 right-4 text-slate-500 hover:text-white text-3xl">✕</button>
-<h2 className="text-5xl text-yellow-400 mb-2">GRATULACJE!</h2>
-<p className="text-slate-400 mb-6">Udało Ci się zebrać wszystkie karty!</p>
-<div className="bg-slate-800 p-6 rounded-2xl mb-6">
-<p className="text-white mb-4 font-bold uppercase tracking-wider">Wybierz kolejny zestaw:</p>
-<div className="grid grid-cols-2 gap-4">
-
-                                        {Object.entries(SETS).map(([key, set]) => (
-<button key={key} onClick={() => resetGame(key)}
-
-                                                className={`p-3 rounded-xl border-2 transition-all ${currentSetKey === key ? 'border-yellow-400 bg-yellow-400/10 text-yellow-400' : 'border-slate-600 hover:border-white text-slate-400'}`}>
-
-                                                {set.name}
-</button>
-
-                                        ))}
-</div>
-</div>
-<button onClick={() => resetGame()} className="w-full bg-yellow-500 hover:bg-yellow-400 text-black text-2xl py-4 rounded-2xl font-black shadow-lg transition-transform active:scale-95">
-
-                                    ZAGRAJ JESZCZE RAZ
-</button>
-</div>
-</div>
-
+                        <div className="fixed inset-0 z-[100] modal-overlay flex items-center justify-center p-4">
+                            <div className="bg-slate-900 border-4 border-yellow-400 rounded-3xl p-8 max-w-md w-full text-center relative animate__animated animate__zoomIn">
+                                <h2 className="text-4xl text-yellow-400 mb-2 font-black">BRAWO!</h2>
+                                <p className="text-slate-400 mb-6 font-bold">Wszystkie karty odblokowane!</p>
+                                <div className="space-y-3 mb-6">
+                                    {Object.entries(SETS).map(([key, set]) => (
+                                        <button
+                                            key={key}
+                                            onClick={() => resetGame(key)}
+                                            className={`w-full p-4 rounded-xl border-2 font-bold transition-all ${currentSetKey === key ? 'border-yellow-400 bg-yellow-400 text-black' : 'border-slate-700 text-slate-400 hover:border-white'}`}
+                                        >
+                                            Graj: {set.name}
+                                        </button>
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={() => resetGame()}
+                                    className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xl py-4 rounded-xl font-black shadow-lg"
+                                >
+                                    POWTÓRZ ZESTAW
+                                </button>
+                            </div>
+                        </div>
                     )}
-</div>
-
+                </div>
             );
-
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-
         root.render(<App />);
-</script>
+    </script>
 </body>
 </html>
