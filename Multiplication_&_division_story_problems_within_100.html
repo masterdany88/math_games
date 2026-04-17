@@ -1,0 +1,457 @@
+[9:54 AM] Daniel Korbel
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matematyczna Przygoda - Edycja Kolekcjonerska</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<style>
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0b0e14; color: white; margin: 0; overflow-x: hidden; }
+
+        .gallery-card { background: rgba(30, 41, 59, 0.3); border: 2px solid #1e293b; transition: all 0.3s ease; }
+
+        .unlocked-card { border: 2px solid #fbbf24; background: #1e293b; box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
+
+        .flying-container { position: fixed; z-index: 1000; pointer-events: none; display: flex; align-items: center; justify-content: center; transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1); width: 200px; height: 200px; }
+
+        /* Przedmioty 2x większe */
+
+        .item-icon { font-size: 5rem; display: inline-block; margin: 10px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
+
+        /* Grafika monety 5zł - 3x większa (ok. 120-140px) */
+
+        .coin-img { width: 130px; height: 130px; object-fit: contain; margin: 8px; filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.4)); border-radius: 50%; }
+
+        input[type="number"], input[type="text"] { color: black !important; font-weight: bold; }
+
+        .equation-input { width: 180px; text-align: center; border-radius: 12px; padding: 12px; margin: 0 5px; font-size: 1.8rem; }
+
+        .checkbox-container { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+
+        .custom-checkbox { width: 28px; height: 28px; border-radius: 8px; border: 2px solid #fbbf24; display: flex; align-items: center; justify-content: center; transition: all 0.2s; background: rgba(251, 191, 36, 0.1); }
+
+        .custom-checkbox.checked { background: #fbbf24; color: black; }
+
+        /* Rozszerzona sekcja zadania */
+
+        .main-task-area { width: 95%; max-width: 1200px; min-height: 500px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+    <script type="text/babel">
+
+        const { useState, useEffect, useRef } = React;
+
+        const COIN_URL = "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQg3hKu243eyUZ15YCK_p9Ie52J0t5f0XNdNuW9Xg1JCEE2cknmp0vrerlKK3TS5EM8Be92Ib5qrQPqhFVD4b_BH4GY83JYGQeBbgSP7jt_SZ9GidYnmmHiwjDfXxGJ8mXit65NQiVcpDY&usqp=CAc%22;
+
+        const OBJECTS = [
+
+            { name: "kwiat", emoji: "🌸", plural: "kwiaty" },
+
+            { name: "lizak", emoji: "🍭", plural: "lizaki" },
+
+            { name: "cukierek", emoji: "🍬", plural: "cukierki" },
+
+            { name: "dinozaur", emoji: "🦖", plural: "dinozaury" },
+
+            { name: "żyrafa", emoji: "🦒", plural: "żyrafy" },
+
+            { name: "pudełko", emoji: "📦", plural: "pudełka" },
+
+            { name: "doniczka", emoji: "🪴", plural: "doniczki" },
+
+            { name: "samochodzik", emoji: "🏎️", plural: "samochodziki" }
+
+        ];
+
+        const SETS = {
+
+            animals: {
+
+                name: "Zestaw: Zwierzęta",
+
+                items: {
+
+                    "A1": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f981/512.gif",
+
+                    "A2": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f438/512.gif",
+
+                    "A3": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f431/512.gif",
+
+                    "A4": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f98a/512.gif",
+
+                    "A5": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f422/512.gif",
+
+                    "A6": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f98b/512.gif",
+
+                }
+
+            },
+
+            food: {
+
+                name: "Zestaw: Jedzenie",
+
+                items: {
+
+                    "F1": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f355/512.gif",
+
+                    "F2": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f354/512.gif",
+
+                    "F3": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f366/512.gif",
+
+                    "F4": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f369/512.gif",
+
+                    "F5": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f34e/512.gif",
+
+                    "F6": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f353/512.gif",
+
+                }
+
+            }
+
+        };
+
+        function App() {
+
+            const [currentSetKey, setCurrentSetKey] = useState("animals");
+
+            const [score, setScore] = useState(0);
+
+            const [unlocked, setUnlocked] = useState([]);
+
+            const [problem, setProblem] = useState(null);
+
+            const [userEq, setUserEq] = useState("");
+
+            const [userAns, setUserAns] = useState("");
+
+            const [isWrong, setIsWrong] = useState(false);
+
+            const [flyingInfo, setFlyingInfo] = useState(null);
+
+            const [showWinModal, setShowWinModal] = useState(false);
+
+            const [autoFill, setAutoFill] = useState(true);
+
+            const cardRefs = useRef({});
+
+            const currentImages = SETS[currentSetKey].items;
+
+            const allKeys = Object.keys(currentImages);
+
+            useEffect(() => { generateProblem(); }, [currentSetKey]);
+
+            const generateProblem = () => {
+
+                const obj = OBJECTS[Math.floor(Math.random() * OBJECTS.length)];
+
+                const type = Math.floor(Math.random() * 3) + 1;
+
+                let q, a, visual;
+
+                if (type === 1) {
+
+                    const count = Math.floor(Math.random() * 3) + 6; // 6, 7, 8
+
+                    const price = Math.floor(Math.random() * 5) + 5;
+
+                    const total = count * price;
+
+                    q = `Ktoś kupił ${count} szt. (${obj.name}) po ${price} zł. Ile łącznie zapłacił?`;
+
+                    a = total;
+
+                    visual = Array(count).fill(obj.emoji);
+
+                } else if (type === 2) {
+
+                    const count = [6, 7, 8][Math.floor(Math.random() * 3)];
+
+                    const pricePerOne = Math.floor(Math.random() * 4) + 5;
+
+                    const total = count * pricePerOne;
+
+                    q = `Za ${count} szt. (${obj.plural}) zapłacił ${total} zł. Ile kosztowała jedna sztuka?`;
+
+                    a = pricePerOne;
+
+                    visual = Array(count).fill(obj.emoji);
+
+} else {
+
+    // Typ 3: Obliczanie liczby sztuk (Całość / Cena za jedną)
+
+    const pricePerOne = [5, 10, 20][Math.floor(Math.random() * 3)]; // Cena za 1 sztukę
+
+    const count = Math.floor(Math.random() * 4) + 3; // Kupujemy od 3 do 6 sztuk
+
+    const total = count * pricePerOne;
+
+    q = `Za ${obj.plural} ktoś zapłacił ${total} zł. Ile sztuk kupił, jeśli za każde zapłacił ${pricePerOne} zł?`;
+
+    a = count;
+
+    // Wizualizacja: monety 5zł/10zł/20zł zależnie od ceny jednostkowej (opcjonalnie)
+
+    visual = Array(count).fill(obj.emoji);
+
+}
+
+                setProblem({ q, a, visual, obj, type });
+
+                setUserEq("");
+
+                setUserAns("");
+
+            };
+
+            const checkResult = () => {
+
+                if (parseInt(userAns) === problem.a) {
+
+                    handleSuccess();
+
+                } else {
+
+                    setIsWrong(true);
+
+                    setTimeout(() => setIsWrong(false), 500);
+
+                    if (!autoFill) setUserAns("");
+
+                }
+
+            };
+
+            const handleEqChange = (val) => {
+
+                setUserEq(val);
+
+                if (autoFill) {
+
+                    const cleanVal = val.replace(/x/g, '*').replace(/:/g, '/');
+
+                    try {
+
+                        const calculated = eval(cleanVal);
+
+                        if (calculated === problem.a) {
+
+                            setUserAns(problem.a.toString());
+
+                        }
+
+                    } catch(e) {}
+
+                }
+
+            };
+
+            const handleSuccess = () => {
+
+                confetti({ particleCount: 150, spread: 100, origin: { y: 0.7 } });
+
+                const available = allKeys.filter(k => !unlocked.includes(k));
+
+                if(available.length > 0) {
+
+                    const picked = available[Math.floor(Math.random() * available.length)];
+
+                    setFlyingInfo({ char: picked, stage: 'start' });
+
+                    setTimeout(() => {
+
+                        const target = cardRefs.current[picked];
+
+                        if (target) {
+
+                            const rect = target.getBoundingClientRect();
+
+                            setFlyingInfo({ char: picked, stage: 'flying', targetX: rect.left + rect.width/2, targetY: rect.top + rect.height/2 });
+
+                        }
+
+                    }, 600);
+
+                    setTimeout(() => {
+
+                        setUnlocked(prev => {
+
+                            const next = [...prev, picked];
+
+                            if (next.length === allKeys.length) setShowWinModal(true);
+
+                            return next;
+
+                        });
+
+                        setFlyingInfo(null);
+
+                    }, 1600);
+
+                }
+
+                setScore(s => s + 10);
+
+                generateProblem();
+
+            };
+
+            if (!problem) return null;
+
+            return (
+<div className="p-6 min-h-screen flex flex-col items-center">
+
+                    {/* PANEL ZADANIA (ROZSZERZONY) */}
+<div className={`main-task-area p-8 sm:p-12 rounded-[40px] bg-slate-900 border-b-[12px] border-blue-600 shadow-2xl mb-12 flex flex-col justify-between transition-all ${isWrong ? 'animate__animated animate__shakeX border-red-500' : ''}`}>
+<div className="flex justify-between items-center mb-6">
+<div className="text-blue-400 text-2xl font-black">WYNIK: {score}</div>
+<div className="checkbox-container" onClick={() => setAutoFill(!autoFill)}>
+<span className="text-sm font-bold text-slate-400 tracking-tighter uppercase">Auto-wynik</span>
+<div className={`custom-checkbox ${autoFill ? 'checked' : ''}`}>
+
+                                    {autoFill && <span className="text-xl font-bold">✓</span>}
+</div>
+</div>
+</div>
+
+                        <h2 className="text-3xl sm:text-5xl font-black text-center text-white leading-tight mb-10">
+
+                            {problem.q}
+</h2>
+
+                        {/* WIZUALIZACJA (DUŻE ELEMENTY) */}
+<div className="bg-slate-950/50 p-10 rounded-[30px] text-center mb-10 min-h-[200px] flex flex-wrap justify-center items-center shadow-inner border border-white/5">
+
+                            {problem.visual === "COINS" ? (
+
+                                Array(10).fill(0).map((_, i) => (
+<img key={i} src={COIN_URL} className="coin-img animate__animated animate__flipInY" style={{animationDelay: `${i*0.08}s`}} alt="5 zł" />
+
+                                ))
+
+                            ) : (
+
+                                problem.visual.map((emoji, i) => (
+<span key={i} className="item-icon animate__animated animate__bounceIn" style={{animationDelay: `${i*0.05}s`}}>{emoji}</span>
+
+                                ))
+
+                            )}
+</div>
+
+                        {/* POLA ODPOWIEDZI */}
+<div className="flex flex-col lg:flex-row gap-8 justify-center items-center">
+<div className="text-center group">
+<label className="block text-sm text-slate-500 mb-3 uppercase font-black tracking-widest">Twoje Równanie</label>
+<input type="text" value={userEq} onChange={e => handleEqChange(e.target.value)}
+
+                                    className="equation-input bg-white shadow-2xl focus:ring-8 ring-yellow-400/50 outline-none transition-all" placeholder="np. 8*6" />
+</div>
+<div className="text-6xl text-yellow-500 font-black animate__animated animate__pulse animate__infinite">=</div>
+<div className="text-center">
+<label className="block text-sm text-slate-500 mb-3 uppercase font-black tracking-widest">Wynik</label>
+<input type="number" value={userAns} onChange={e => setUserAns(e.target.value)}
+
+                                    className="equation-input border-4 border-yellow-500 bg-yellow-50 shadow-2xl focus:ring-8 ring-green-400/50 outline-none transition-all" placeholder="?" />
+</div>
+<button onClick={checkResult} className="bg-green-500 hover:bg-green-400 px-14 py-6 rounded-2xl text-3xl font-black text-green-950 transition-all shadow-[0_10px_0_rgb(21,128,61)] active:shadow-none active:translate-y-2 uppercase">
+
+                                Gotowe!
+</button>
+</div>
+</div>
+
+                    {/* GALERIA KART */}
+<div className="w-full max-w-6xl px-4">
+<div className="flex justify-between items-center mb-8">
+<h3 className="text-2xl text-slate-500 font-black uppercase tracking-widest">{SETS[currentSetKey].name}</h3>
+<div className="text-3xl text-yellow-400 font-black bg-slate-800 px-8 py-2 rounded-full border-2 border-yellow-400/20">{unlocked.length} / {allKeys.length}</div>
+</div>
+<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8">
+
+                            {allKeys.map((id) => (
+<div key={id} ref={el => cardRefs.current[id] = el}
+
+                                    className={`gallery-card aspect-[3/4] rounded-[32px] flex items-center justify-center relative overflow-hidden shadow-2xl border-4 transition-all ${unlocked.includes(id) ? 'unlocked-card animate__animated animate__jackInTheBox' : 'opacity-10 border-slate-800'}`}>
+
+                                    {unlocked.includes(id) ? (
+<img src={currentImages[id]} className="w-full h-full p-6 object-contain" />
+
+                                    ) : (
+<div className="flex flex-col items-center">
+<span className="text-5xl font-black text-slate-800">?</span>
+</div>
+
+                                    )}
+</div>
+
+                            ))}
+</div>
+</div>
+
+                    {/* ANIMACJA ZDOBYCIA KARTY */}
+
+                    {flyingInfo && (
+<div className="flying-container" style={{
+
+                            top: flyingInfo.stage === 'start' ? '50%' : `${flyingInfo.targetY}px`,
+
+                            left: flyingInfo.stage === 'start' ? '50%' : `${flyingInfo.targetX}px`,
+
+                            transform: 'translate(-50%, -50%)'
+
+                        }}>
+<img src={currentImages[flyingInfo.char]} className="w-full h-full object-contain"
+
+                                 style={{ transform: flyingInfo.stage === 'start' ? 'scale(4)' : 'scale(0.5)', transition: 'all 1.2s' }} />
+</div>
+
+                    )}
+
+                    {/* MODAL KOŃCOWY */}
+
+                    {showWinModal && (
+<div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
+<div className="bg-slate-900 border-[6px] border-yellow-400 rounded-[50px] p-12 max-w-lg w-full text-center animate__animated animate__zoomIn">
+<div className="text-8xl mb-6">🏆</div>
+<h2 className="text-6xl text-yellow-400 font-black mb-4 uppercase">Brawo!</h2>
+<p className="text-xl text-slate-400 mb-10">Zebrałeś całą kolekcję!</p>
+<div className="space-y-4">
+
+                                    {Object.entries(SETS).map(([k, s]) => (
+<button key={k} onClick={() => { setCurrentSetKey(k); setUnlocked([]); setShowWinModal(false); }}
+
+                                            className="w-full p-6 bg-blue-600 hover:bg-blue-500 rounded-3xl transition-all font-black text-2xl shadow-[0_8px_0_rgb(29,78,216)] active:translate-y-1 active:shadow-none">
+
+                                            {s.name}
+</button>
+
+                                    ))}
+</div>
+</div>
+</div>
+
+                    )}
+</div>
+
+            );
+
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+
+        root.render(<App />);
+</script>
+</body>
+</html>
